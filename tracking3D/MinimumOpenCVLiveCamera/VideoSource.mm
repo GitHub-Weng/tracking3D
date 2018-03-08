@@ -28,43 +28,63 @@ using namespace std;
     self.previewLayer.contentsGravity = kCAGravityResizeAspectFill;
     self.previewLayer.frame = targetView.bounds;
     self.previewLayer.affineTransform = CGAffineTransformMakeRotation(M_PI / 2);
+    //M_PI + M_PI/2 这种情况下横屏是上下正常，但是左右相反，竖屏是上下相反，但是左右正常
+    //M_PI/2        这种情况下横屏是左右相反，但是上下正常，竖屏是上下正常，但是左右相反
+
 }
-- (AVCaptureDevice *)cameraWithPosition:(AVCaptureDevicePosition)position{
-    NSArray *devices = [AVCaptureDevice devicesWithMediaType:AVMediaTypeVideo];
-    for ( AVCaptureDevice *device in devices )
-        if ( device.position == position ) return device;
+
+- (AVCaptureDevice *)cameraWithPostion:(AVCaptureDevicePosition)position{
+    AVCaptureDeviceDiscoverySession* deviceDiscoverySession = [AVCaptureDeviceDiscoverySession discoverySessionWithDeviceTypes:@[AVCaptureDeviceTypeBuiltInWideAngleCamera] mediaType:AVMediaTypeVideo position:position];
+
+    NSArray *devicesIOS  = deviceDiscoverySession.devices;
+    for (AVCaptureDevice *device in devicesIOS) {
+        if ([device position] == position) {
+            return device;
+        }
+    }
     return nil;
 }
+
+//- (AVCaptureDevice *)cameraWithPosition:(AVCaptureDevicePosition)position{
+//    NSArray *devices = [AVCaptureDevice devicesWithMediaType:AVMediaTypeVideo];
+//    for ( AVCaptureDevice *device in devices )
+//        if ( device.position == position ) return device;
+//    return nil;
+//}
+
+
 - (instancetype)init
 {
     self = [super init];
     if (self) {
-        _captureSession = [[AVCaptureSession alloc] init];
+        self.captureSession = [[AVCaptureSession alloc] init];
         
         //这里就是为什么Mat的规格为640*480
         _captureSession.sessionPreset = AVCaptureSessionPreset640x480;
         
         AVCaptureDevice *device = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
-        
-        device = [self cameraWithPosition:AVCaptureDevicePositionFront];
-        
-      // AVCaptureDevice* device = [AVCaptureDevice defaultDeviceWithDeviceType:AVCaptureDeviceTypeBuiltInDualCamera mediaType:AVMediaTypeVideo position:AVCaptureDevicePositionFront];
-        //AVCaptureDevice* device = [self cameraWithPosition:AVCaptureDevicePositionFront];
+        device = [self cameraWithPostion:AVCaptureDevicePositionFront];
        
         
         NSError *error = nil;
         AVCaptureDeviceInput *input = [[AVCaptureDeviceInput alloc] initWithDevice:device error:&error];
-        [_captureSession addInput:input];
+        if([self.captureSession canAddInput:input]){
+             [self.captureSession addInput:input];
+        }
+       
         
         AVCaptureVideoDataOutput *output = [[AVCaptureVideoDataOutput alloc] init];
         output.videoSettings = @{(NSString *)kCVPixelBufferPixelFormatTypeKey : @(kCVPixelFormatType_32BGRA)};
-        output.alwaysDiscardsLateVideoFrames = YES;
-        [_captureSession addOutput:output];
+        output.alwaysDiscardsLateVideoFrames = YES;//here default is YES
+        if([self.captureSession canAddOutput:output]){
+            [self.captureSession addOutput:output];
+        }
+        
         
         dispatch_queue_t queue = dispatch_queue_create("VideoQueue", DISPATCH_QUEUE_SERIAL);
         [output setSampleBufferDelegate:self queue:queue];
         
-        _previewLayer = [CALayer layer];
+        self.previewLayer = [CALayer layer];
         
         tmode = true;
     }
@@ -105,6 +125,7 @@ using namespace std;
             [self.delegate touchMode:mat];
             break;
     }
+    
     
     CGImageRef imageRef = [self CGImageFromCVMat:mat];
     dispatch_sync(dispatch_get_main_queue(), ^{
