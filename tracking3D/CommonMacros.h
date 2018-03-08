@@ -6,8 +6,6 @@
 //  Copyright © 2018 ShenZhen University. All rights reserved.
 //
 
-#import "KSAssert.h"
-
 #define IS_EMPTY_STR(x) (x == nil || [x isEqualToString: @""])
 //至少拿到空串，不能是nil
 #define SAFE_GETSTR(x) x ? x:@""
@@ -126,8 +124,6 @@
 
 #define SAFE_CAST(obj, asClass)  [ComHelper safeCastObject:(obj) toClass:[asClass class]]
 
-// 判断当前运行在主线程
-#define ASSERT_MAIN_THREAD ASSERT([NSThread currentThread] == [NSThread mainThread]);
 
 #define TIMESTAMP [[NSDate date] timeIntervalSince1970]
 
