@@ -33,7 +33,6 @@
 		514DA449204D076C00681C6D /* CAXException.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 514DA444204D076B00681C6D /* CAXException.cpp */; };
 		514DA44A204D076C00681C6D /* CAStreamBasicDescription.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 514DA445204D076B00681C6D /* CAStreamBasicDescription.cpp */; };
 		514DA44F204D0A7600681C6D /* CADebugMacros.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 514DA44E204D0A7600681C6D /* CADebugMacros.cpp */; };
-		514DA459204D159600681C6D /* opencv2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 514DA458204D159600681C6D /* opencv2.framework */; };
 		5154AC3D204E9DEF005333EE /* opencv2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5154AC3C204E9DEE005333EE /* opencv2.framework */; };
 		5154AC40204E9E1F005333EE /* AudioController.mm in Sources */ = {isa = PBXBuildFile; fileRef = 5154AC3E204E9E1F005333EE /* AudioController.mm */; };
 		5154AC46204EC6AE005333EE /* Tracking3DViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 5154AC45204EC6AE005333EE /* Tracking3DViewController.m */; };
@@ -78,7 +77,6 @@
 		514D9EE1204CE63500681C6D /* mode3a.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = mode3a.jpg; sourceTree = "<group>"; };
 		514D9EE2204CE63500681C6D /* project2_report.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = project2_report.pdf; sourceTree = "<group>"; };
 		514D9EE3204CE63500681C6D /* project2_report.tex */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = project2_report.tex; sourceTree = "<group>"; };
-		514D9EEE204CE64300681C6D /* opencv2.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = opencv2.framework; sourceTree = "<group>"; };
 		514DA43E204D075400681C6D /* RangeFinder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RangeFinder.cpp; sourceTree = "<group>"; };
 		514DA440204D075400681C6D /* RangeFinder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RangeFinder.h; sourceTree = "<group>"; };
 		514DA443204D076B00681C6D /* CAMath.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CAMath.h; sourceTree = "<group>"; };
@@ -91,7 +89,6 @@
 		514DA44E204D0A7600681C6D /* CADebugMacros.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CADebugMacros.cpp; sourceTree = "<group>"; };
 		514DA454204D133E00681C6D /* CoreAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudio.framework; path = System/Library/Frameworks/CoreAudio.framework; sourceTree = SDKROOT; };
 		514DA456204D135700681C6D /* CoreAudioKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudioKit.framework; path = System/Library/Frameworks/CoreAudioKit.framework; sourceTree = SDKROOT; };
-		514DA458204D159600681C6D /* opencv2.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = opencv2.framework; sourceTree = "<group>"; };
 		5154AC3C204E9DEE005333EE /* opencv2.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = opencv2.framework; sourceTree = "<group>"; };
 		5154AC3E204E9E1F005333EE /* AudioController.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = AudioController.mm; path = "../../../../Downloads/LLAP-master/llap/Control/AudioController.mm"; sourceTree = "<group>"; };
 		5154AC3F204E9E1F005333EE /* AudioController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AudioController.h; path = "../../../../Downloads/LLAP-master/llap/Control/AudioController.h"; sourceTree = "<group>"; };
@@ -110,7 +107,6 @@
 			files = (
 				E979E7DC1BEB597D0061BC68 /* CoreMedia.framework in Frameworks */,
 				E979E7DA1BEB59740061BC68 /* Accelerate.framework in Frameworks */,
-				514DA459204D159600681C6D /* opencv2.framework in Frameworks */,
 				5154AC3D204E9DEF005333EE /* opencv2.framework in Frameworks */,
 				E979E7D81BEB59710061BC68 /* AVFoundation.framework in Frameworks */,
 			);
@@ -244,8 +240,6 @@
 			isa = PBXGroup;
 			children = (
 				51041DFC204E74AC00C31896 /* tracking3D */,
-				514D9EEE204CE64300681C6D /* opencv2.framework */,
-				514DA458204D159600681C6D /* opencv2.framework */,
 				5154AC3C204E9DEE005333EE /* opencv2.framework */,
 				E979E7DB1BEB597D0061BC68 /* CoreMedia.framework */,
 				E979E7D91BEB59740061BC68 /* Accelerate.framework */,
