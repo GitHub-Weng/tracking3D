@@ -56,4 +56,7 @@
     [self.videoSource switchCamera];
 }
 
+-(CGPoint)getOpenCVCurrentPosition{
+    return [self.frameProcessor getOpenCVCurrentPosition];
+}
 @end

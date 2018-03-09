@@ -17,9 +17,12 @@
 @property (strong,nonatomic) UIButton* start;
 @property (strong,nonatomic) UIButton* stop;
 @property (strong,nonatomic) UIButton* mode;
+@property (strong,nonatomic) UIButton* mouse;
+@property (strong,nonatomic) UIButton* testOpenCVTrackResultBtn;
 @property (strong,nonatomic) UIButton* switchCameraBtn;
 @property (strong,nonatomic) UIView* previewView;
 @property (strong,nonatomic) Wrapper* wrapper;
+@property (assign,nonatomic) BOOL canTestOpenCVTrackResult;
 @end
 
 @implementation OpenCVViewController
@@ -35,16 +38,21 @@
     
     self.previewView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, SCREEN_WIDTH ,SCREEN_HEIGHT)];
     self.wrapper = [[Wrapper alloc]init];
+    
     self.start = [[UIButton alloc]initWithFrame:CGRectMake(btnMargin, SCREEN_HEIGHT/2+100, btnWidth, btnHeight)];
-    
     [self.start addTarget:self action:@selector(startTracking) forControlEvents:UIControlEventTouchDown];
+    
     self.stop = [[UIButton alloc]initWithFrame:CGRectMake(self.start.right + btnMargin, SCREEN_HEIGHT/2+100, btnWidth,btnHeight)];
-    
     [self.stop addTarget:self action:@selector(stopTracking) forControlEvents:UIControlEventTouchDown];
-    
     
     self.mode = [[UIButton alloc]initWithFrame:CGRectMake(self.stop.right+btnMargin, SCREEN_HEIGHT/2+100, btnWidth,btnHeight)];
     [self.mode addTarget:self action:@selector(showAlertMenu) forControlEvents:UIControlEventTouchDown];
+    
+    self.mouse = [[UIButton alloc]initWithFrame:CGRectMake(0, 0, 55,55)];
+    [self.mouse addTarget:self action:@selector(showAlertMenu) forControlEvents:UIControlEventTouchDown];
+    
+    self.testOpenCVTrackResultBtn = [[UIButton alloc]initWithFrame:CGRectMake((SCREEN_WIDTH - btnWidth)/2, SCREEN_HEIGHT/2+200, btnWidth,btnWidth)];
+    [self.testOpenCVTrackResultBtn addTarget:self action:@selector(showTestOpenCVResult) forControlEvents:UIControlEventTouchDown];
     
     self.switchCameraBtn = [[UIButton alloc]initWithFrame:CGRectMake(SCREEN_WIDTH - 80, 80, 40,40)];
     [self.switchCameraBtn setImage:[UIImage imageNamed:@"switch_camera.png"] forState:UIControlStateNormal];
@@ -54,22 +62,28 @@
     self.start.layer.cornerRadius = 4;
     self.stop.layer.cornerRadius = 4;
     self.mode.layer.cornerRadius = 4;
+    self.testOpenCVTrackResultBtn.layer.cornerRadius = btnWidth/2;
     
     self.start.backgroundColor = [UIColor grayColor];
     self.stop.backgroundColor = [UIColor grayColor];
     self.mode.backgroundColor = [UIColor grayColor];
-    
+    self.mouse.backgroundColor = [UIColor grayColor];
+    self.testOpenCVTrackResultBtn.backgroundColor = [UIColor grayColor];
     
     [self.start setTitle:@"start" forState:UIControlStateNormal];
     [self.start setTintColor:[UIColor whiteColor]];
     
-    
     [self.stop setTitle:@"stop" forState:UIControlStateNormal];
     [self.stop setTintColor:[UIColor whiteColor]];
     
-    
     [self.mode setTitle:@"mode" forState:UIControlStateNormal];
     [self.mode setTintColor:[UIColor whiteColor]];
+    
+    [self.mouse setTitle:@"mouse" forState:UIControlStateNormal];
+    [self.mouse setTintColor:[UIColor whiteColor]];
+    
+    [self.testOpenCVTrackResultBtn setTitle:@"test" forState:UIControlStateNormal];
+    [self.testOpenCVTrackResultBtn setTintColor:[UIColor whiteColor]];
 
     
     [self.wrapper setTargetView:self.previewView];
@@ -78,6 +92,11 @@
     [self.view addSubview: self.stop];
     [self.view addSubview:self.mode];
     [self.view addSubview:self.switchCameraBtn];
+    [self.view addSubview:self.mouse];
+    [self.view addSubview:self.testOpenCVTrackResultBtn];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(performOpenCVPositionUpdate:) name:@"OpenCVPositionUpdate" object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(performCanUseLLAPUpdate:) name:@"canUseLLAPUpdate" object:nil];
 }
 
 //这里加了TabBarController的功能之后切换tabBar并不会调用这个方法
@@ -167,6 +186,16 @@
     [alertController addAction:cancel];
     [self presentViewController:alertController animated:true completion:nil];
 }
+
+-(void)showTestOpenCVResult{
+    if(self.canTestOpenCVTrackResult){
+        self.mouse.hidden = YES;
+        self.canTestOpenCVTrackResult = NO;
+    }else{
+        self.mouse.hidden = NO;
+        self.canTestOpenCVTrackResult = YES;
+    }
+}
 //
 //func showAlertMenu() {
 //
@@ -234,4 +263,32 @@
 //
 //}
 
+- (void)performOpenCVPositionUpdate:(NSNotification *)notification
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        
+        CGPoint openCVCurrentPosition = [self.wrapper getOpenCVCurrentPosition];
+        self.mouse.frame = CGRectMake(openCVCurrentPosition.x, openCVCurrentPosition.y, SCREEN_WIDTH/8, SCREEN_WIDTH/8);
+        
+    }
+                   );
+    
+}
+- (void)performCanUseLLAPUpdate:(NSNotification *)notification
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        
+        if(self.mouse.backgroundColor == [UIColor grayColor]){
+            self.mouse.backgroundColor = [UIColor redColor];
+        }else{
+            self.mouse.backgroundColor = [UIColor grayColor];
+        }
+        
+    }
+                   );
+    
+}
+
+
 @end
+

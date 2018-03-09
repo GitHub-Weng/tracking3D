@@ -12,11 +12,11 @@
 
 using namespace cv;
 using namespace std;
+static NSInteger choseCameraPosition = 0;
 
 @interface VideoSource () <AVCaptureVideoDataOutputSampleBufferDelegate>
 @property (strong, nonatomic) CALayer *previewLayer;
 @property (strong, nonatomic) AVCaptureSession *captureSession;
-@property (assign, nonatomic) AVCaptureDevicePosition choseCamera;
 @property (strong, nonatomic) AVCaptureDeviceInput* captureDeviceInput;
 @property (strong, nonatomic) AVCaptureVideoDataOutput* captureDeviceOutput;
 
@@ -55,13 +55,13 @@ using namespace std;
     AVCaptureDevicePosition position;
     
     AVCaptureDevice *newDevice;
-    if(self.choseCamera == AVCaptureDevicePositionFront){
+    if(choseCameraPosition == AVCaptureDevicePositionFront){
         position = AVCaptureDevicePositionBack;
     }else{
         position = AVCaptureDevicePositionFront;
     }
     
-    self.choseCamera = position;
+    choseCameraPosition = position;
     
     AVCaptureDeviceDiscoverySession* deviceDiscoverySession = [AVCaptureDeviceDiscoverySession discoverySessionWithDeviceTypes:@[AVCaptureDeviceTypeBuiltInWideAngleCamera] mediaType:AVMediaTypeVideo position:position];
     
@@ -97,14 +97,14 @@ using namespace std;
 {
     self = [super init];
     if (self) {
-        self.choseCamera = AVCaptureDevicePositionFront;
+        choseCameraPosition = AVCaptureDevicePositionFront;
         self.captureSession = [[AVCaptureSession alloc] init];
         
         //这里就是为什么Mat的规格为640*480
         _captureSession.sessionPreset = AVCaptureSessionPreset640x480;
         
         AVCaptureDevice *device = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
-        device = [self cameraWithPostion:self.choseCamera];
+        device = [self cameraWithPostion:AVCaptureDevicePositionFront];
        
         
         NSError *error = nil;
@@ -170,7 +170,7 @@ using namespace std;
     
     CGImageRef imageRef;
     //前置摄像头的时候需要这样需改，不然视图会奇怪
-    if(self.choseCamera == AVCaptureDevicePositionFront){
+    if(choseCameraPosition == AVCaptureDevicePositionFront){
         cv::flip(mat, mat2, 0);
         imageRef = [self CGImageFromCVMat:mat2];
     }else{
@@ -194,7 +194,7 @@ using namespace std;
 - (void)update:(CGPoint)coords {
     if(tmode == 1){
         //we should adjust the position of the touch point when use the Front Camera
-        if(self.choseCamera == AVCaptureDevicePositionFront){
+        if(choseCameraPosition == AVCaptureDevicePositionFront){
             coords = CGPointMake( CGRectGetWidth([[UIScreen mainScreen] bounds]) - coords.x, coords.y);
         }
         [self.delegate update:coords];
@@ -245,5 +245,8 @@ using namespace std;
     return imageRef;
 }
 
++(NSInteger)currentChoseCameraPosition{
+    return choseCameraPosition;
+}
 
 @end

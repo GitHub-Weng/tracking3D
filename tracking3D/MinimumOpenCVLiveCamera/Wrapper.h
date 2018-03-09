@@ -16,5 +16,5 @@
 - (void)start;
 - (void)stop;
 -(void)switchCamera;
-
+-(CGPoint)getOpenCVCurrentPosition;
 @end

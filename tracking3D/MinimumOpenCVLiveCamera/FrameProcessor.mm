@@ -7,13 +7,42 @@
 //
 
 #import "FrameProcessor.h"
+#import "CommonMacros.h"
+typedef NS_ENUM(NSInteger, mAVCaptureDevicePosition) {
+    AVCaptureDevicePositionUnspecified = 0,
+    AVCaptureDevicePositionBack        = 1,
+    AVCaptureDevicePositionFront       = 2,
+};
+
+/*
+    Here Thr_X is the threshold value for positionX,if the change of the positionX > Thr_X,
+    mean the object move obviously in X axis,in which situation we can not use the LLAP.
+ */
+static float Thr_X = 35;
+static float Thr_Y = 35;
+
+@interface FrameProcessor ()
+@property CGPoint openCVCurrentPosition;
+@property CGPoint openCVPriorPosition;
+@property float boxWidth;
+@property float constX;
+@property float constY;
+@property float deltaX;
+@property float deltaY;
+@property bool notFirstFrame;
+@end
 
 @implementation FrameProcessor
 
 - (instancetype)init
 {
+    self.notFirstFrame = NO;
+    self.boxWidth = [self calculateBoxWidth];
+    self.constX = SCREEN_WIDTH/(355.0-125.0);
+    self.constY = SCREEN_HEIGHT/(580.0-80.0);
+    
     // CT initialization
-    box = cv::Rect(100,100,55,55);
+    box = cv::Rect(100,100,self.boxWidth,self.boxWidth);
     ct.init(current_gray, box);
     
     // Background subtraction object
@@ -47,9 +76,85 @@
     ct.processFrame(current_gray, box);
     // Draw bounding box
     rectangle(frame, box, Scalar(0,0,255));
-    NSLog(@"position is (%d,%d)\n",box.x,box.y);
+    NSLog(@"position is (%d,%d)\n",box.y,box.x);
     // Draw small circle at the last point touched
     circle(frame, touch, 5, Scalar(0,255,0));
+    
+    self.openCVPriorPosition = CGPointMake(self.openCVCurrentPosition.x, self.openCVCurrentPosition.y);
+    self.openCVCurrentPosition = CGPointMake(box.y, box.x);
+    
+    //这里虽然可以直接放返回box的位置，但是位置不准，要进行校正
+    CGFloat openCVCurrentPositionX;
+    CGFloat openCVCurrentPositionY;
+
+    openCVCurrentPositionX = box.y;
+    openCVCurrentPositionY = box.x;
+
+    /*Here we should translate the box's position to the position on iphone screen,
+      so that we can get the coarse position for 2D tracking
+     A ---- B
+      |    |
+      |    |
+      |    |
+     C ---- D
+     if we use the front camera,here the reference point is point A
+     if we use the back camera,here the reference point is point B
+     
+     For example, if we use the front camera
+     According to the result, when the box move,
+     the range change in iphone is around A(125,80) B(355,80) C(125,580) D(355,580)
+    
+     so we can get the coarse positon on iphone by these point,
+     the formula to tranform the box position into position on iphone are
+     
+      iphoneX = (boxX - 125.0)/(355-125.0)*SCREEN_WIDTH;
+      iphoneY = (boxY - 80.0)/(580-80.0)*SCREEN_HEIGHT;
+     
+     Here we mark the (355-125.0)*SCREEN_WIDTH as constX,(580-80.0)*SCREEN_HEIGHT as constY,
+     as for constX, we replace the /(355-125.0)*SCREEN_WIDTH as *SCREEN_WIDTH/(355-125.0),
+     we do the same for constY.
+     
+     */
+    
+    if(openCVCurrentPositionX>125 &&openCVCurrentPositionX <355){
+        openCVCurrentPositionX = (openCVCurrentPositionX - 125.0)*self.constX;
+    }else{
+        openCVCurrentPositionX = -100;
+    }
+    
+    if(openCVCurrentPositionY>80 &&openCVCurrentPositionY <580){
+        openCVCurrentPositionY = (openCVCurrentPositionY - 80.0)*self.constY;
+    }else{
+        openCVCurrentPositionY = -100;
+    }
+
+    if([VideoSource currentChoseCameraPosition] == AVCaptureDevicePositionBack){
+        openCVCurrentPositionX = SCREEN_WIDTH - openCVCurrentPositionX - SCREEN_WIDTH/8;
+    }
+    self.openCVCurrentPosition = CGPointMake(openCVCurrentPositionX, openCVCurrentPositionY);
+   
+    if(self.notFirstFrame){//if is not the first frame,which means we can calculate the change between the frames
+        float changeX = self.openCVCurrentPosition.x - self.openCVPriorPosition.x;
+        float changeY = self.openCVCurrentPosition.y - self.openCVPriorPosition.y;
+        
+        //EMAtoday=α * Pricetoday + ( 1 - α ) * EMAyesterday;
+        //其中，α为平滑指数，一般取作2/(N+1)。在计算MACD指标时，EMA计算中的N一般选取12和26天，因此α相应为2/13和2/27。
+        //这里暂时不用EMA来算变化趋势，直接用变化累计值
+        
+        self.deltaX = self.deltaX + changeX;
+        self.deltaY = self.deltaY + changeY;
+        
+        if(fabsf(self.deltaX) > Thr_X || fabsf(self.deltaY) > Thr_Y){//
+            [[NSNotificationCenter defaultCenter] postNotificationName:@"canUseLLAPUpdate" object:nil];
+            self.deltaX = 0;
+            self.deltaY = 0;
+        }
+        
+    }
+    
+    //这里到时要加判断，如果变化比较大的话那么才进行变更
+    [[NSNotificationCenter defaultCenter] postNotificationName:@"OpenCVPositionUpdate" object:nil];
+    self.notFirstFrame = YES;
 }
 
 
@@ -202,7 +307,14 @@
     }
 }
 
-
+/*
+ 设备                        设计分辨率(点)
+ iPhone4/4s                 320 x 480
+ iPhone5/5s/5c/SE           320 x 568
+ iPhone6/6s/7               375 x 667
+ iPhone6P/6sP/7P            414 x 736
+ iphoneX                    375 × 812
+ */
 
 /* Update the tracking box location where the screen was touched
    Translate iphone 6 screen coordinates to OpenCV mat coordinates.
@@ -226,7 +338,7 @@
     int x = x1;
     int y = 400 - y1;
     
-    touchBox = cv::Rect(x, y, 55, 55);
+    touchBox = cv::Rect(x, y, self.boxWidth,self.boxWidth);
     touch = cv::Point(x, y);
 }
 
@@ -239,6 +351,13 @@
     delay = timeInSeconds + 4;
 }
 
+-(CGPoint)getOpenCVCurrentPosition{
+    return self.openCVCurrentPosition;
+}
+
+-(NSInteger)calculateBoxWidth{
+    return SCREEN_WIDTH/10.0;
+}
 @end
 
 

@@ -33,7 +33,7 @@
 - (void)update:(CGPoint)coords;
 - (void)start;
 - (void)stop;
-
++ (NSInteger)currentChoseCameraPosition;
 
 @property(nonatomic, weak) id<VideoSourceDelegate> delegate;
 @property(nonatomic, strong) UIView *targetView;

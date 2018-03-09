@@ -41,7 +41,7 @@ using namespace cv;
     cv::Point touch;
 }
 
-
+-(CGPoint)getOpenCVCurrentPosition;
 
 @end
 
