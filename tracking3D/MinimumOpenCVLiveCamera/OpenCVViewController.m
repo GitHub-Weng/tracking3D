@@ -8,13 +8,7 @@
 
 #import "OpenCVViewController.h"
 #import "LLAPViewController.h"
-#import "UIView+Extension.h"
 #import "Wrapper.h"
-
-
-static float btnWidth = 100;
-static float btnHeight = 50;
-static float btnMargin = 50;
 
 @interface OpenCVViewController (){
    // AudioController *audioController;
@@ -23,6 +17,7 @@ static float btnMargin = 50;
 @property (strong,nonatomic) UIButton* start;
 @property (strong,nonatomic) UIButton* stop;
 @property (strong,nonatomic) UIButton* mode;
+@property (strong,nonatomic) UIButton* switchCameraBtn;
 @property (strong,nonatomic) UIView* previewView;
 @property (strong,nonatomic) Wrapper* wrapper;
 @end
@@ -34,19 +29,26 @@ static float btnMargin = 50;
     // Do any additional setup after loading the view, typically from a nib.
     //audioController = [[AudioController alloc] init];
 
+     float btnWidth = SCREEN_WIDTH * 0.2;
+     float btnHeight = btnWidth/2;
+     float btnMargin = btnHeight;
     
     self.previewView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, SCREEN_WIDTH ,SCREEN_HEIGHT)];
     self.wrapper = [[Wrapper alloc]init];
-    self.start = [[UIButton alloc]initWithFrame:CGRectMake((SCREEN_WIDTH- 3*btnWidth - 2*btnMargin)/2, 500, btnWidth, btnHeight)];
+    self.start = [[UIButton alloc]initWithFrame:CGRectMake(btnMargin, SCREEN_HEIGHT/2+100, btnWidth, btnHeight)];
     
     [self.start addTarget:self action:@selector(startTracking) forControlEvents:UIControlEventTouchDown];
-    self.stop = [[UIButton alloc]initWithFrame:CGRectMake(self.start.right + btnMargin, 500, btnWidth,btnHeight)];
+    self.stop = [[UIButton alloc]initWithFrame:CGRectMake(self.start.right + btnMargin, SCREEN_HEIGHT/2+100, btnWidth,btnHeight)];
     
     [self.stop addTarget:self action:@selector(stopTracking) forControlEvents:UIControlEventTouchDown];
     
     
-    self.mode = [[UIButton alloc]initWithFrame:CGRectMake(self.stop.right+btnMargin, 500, btnWidth,btnHeight)];
+    self.mode = [[UIButton alloc]initWithFrame:CGRectMake(self.stop.right+btnMargin, SCREEN_HEIGHT/2+100, btnWidth,btnHeight)];
+    [self.mode addTarget:self action:@selector(showAlertMenu) forControlEvents:UIControlEventTouchDown];
     
+    self.switchCameraBtn = [[UIButton alloc]initWithFrame:CGRectMake(SCREEN_WIDTH - 80, 80, 40,40)];
+    [self.switchCameraBtn setImage:[UIImage imageNamed:@"switch_camera.png"] forState:UIControlStateNormal];
+    [self.switchCameraBtn addTarget:self action:@selector(switchCamera) forControlEvents:UIControlEventTouchDown];
     
     
     self.start.layer.cornerRadius = 4;
@@ -75,6 +77,7 @@ static float btnMargin = 50;
     [self.view addSubview:self.start];
     [self.view addSubview: self.stop];
     [self.view addSubview:self.mode];
+    [self.view addSubview:self.switchCameraBtn];
 }
 
 //这里加了TabBarController的功能之后切换tabBar并不会调用这个方法
@@ -110,6 +113,9 @@ static float btnMargin = 50;
     
     //[audioController startIOUnit];
 }
+-(void)switchCamera{
+    [self.wrapper switchCamera];
+}
 
 //
 //@IBAction func switchMode(_ sender: Any) {
@@ -126,6 +132,41 @@ static float btnMargin = 50;
 //    wrapper.stop()
 //    audioController.stopIOUnit();
 //}
+
+-(void)showAlertMenu{
+    UIAlertController* alertController = [UIAlertController alertControllerWithTitle:@"Mode" message:@"Choose a mode" preferredStyle:UIAlertControllerStyleAlert];
+    
+    UIAlertAction* touch = [UIAlertAction actionWithTitle:@"Touch Tracking" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+        [self.wrapper switchMode:1];
+        [self.wrapper start];
+    }];
+    
+    UIAlertAction* objectDet = [UIAlertAction actionWithTitle:@"Object Detection" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+        [self.wrapper switchMode:2];
+        [self.wrapper start];
+    }];
+    
+    UIAlertAction* objectDetMask = [UIAlertAction actionWithTitle:@"Object Detection Mask" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+        [self.wrapper switchMode:3];
+        [self.wrapper start];
+    }];
+    
+    UIAlertAction* opticalFlow = [UIAlertAction actionWithTitle:@"Optical Flow" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+        [self.wrapper switchMode:4];
+        [self.wrapper start];
+    }];
+    
+    UIAlertAction* cancel = [UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+        [self.wrapper start];
+    }];
+    
+    [alertController addAction:touch];
+    [alertController addAction:objectDet];
+    [alertController addAction:objectDetMask];
+    [alertController addAction:opticalFlow];
+    [alertController addAction:cancel];
+    [self presentViewController:alertController animated:true completion:nil];
+}
 //
 //func showAlertMenu() {
 //
@@ -174,7 +215,7 @@ static float btnMargin = 50;
 //    alertController.addAction(okAction)
 //    self.present(alertController, animated: true, completion: nil)
 //}
-
+//
 
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
