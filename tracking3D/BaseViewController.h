@@ -10,6 +10,8 @@
 #import "WXTabBarController.h"
 #import "AudioController.h"
 #import "CommonMacros.h"
+#import "UIView+Extension.h"
+
 @interface BaseViewController : UIViewController
 -(id) getVCFromTabBarControllerByIndex:(NSInteger)index;
 @end

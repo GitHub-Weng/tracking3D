@@ -15,5 +15,6 @@
 - (void)updateBox:(CGPoint)coords;
 - (void)start;
 - (void)stop;
+-(void)switchCamera;
 
 @end

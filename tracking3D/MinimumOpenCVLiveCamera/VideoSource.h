@@ -28,7 +28,7 @@
     
     int tmode;
 }
-
+- (void)switchCamera;
 - (void)switchMode:(int)mode;
 - (void)update:(CGPoint)coords;
 - (void)start;

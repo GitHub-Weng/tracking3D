@@ -52,4 +52,8 @@
     [self.videoSource stop];
 }
 
+-(void)switchCamera{
+    [self.videoSource switchCamera];
+}
+
 @end

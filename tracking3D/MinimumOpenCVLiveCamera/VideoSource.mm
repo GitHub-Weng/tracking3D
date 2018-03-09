@@ -16,7 +16,12 @@ using namespace std;
 @interface VideoSource () <AVCaptureVideoDataOutputSampleBufferDelegate>
 @property (strong, nonatomic) CALayer *previewLayer;
 @property (strong, nonatomic) AVCaptureSession *captureSession;
+@property (assign, nonatomic) AVCaptureDevicePosition choseCamera;
+@property (strong, nonatomic) AVCaptureDeviceInput* captureDeviceInput;
+@property (strong, nonatomic) AVCaptureVideoDataOutput* captureDeviceOutput;
+
 @end
+
 
 @implementation VideoSource
 
@@ -45,6 +50,41 @@ using namespace std;
     return nil;
 }
 
+- (void)switchCamera{
+    
+    AVCaptureDevicePosition position;
+    
+    AVCaptureDevice *newDevice;
+    if(self.choseCamera == AVCaptureDevicePositionFront){
+        position = AVCaptureDevicePositionBack;
+    }else{
+        position = AVCaptureDevicePositionFront;
+    }
+    
+    self.choseCamera = position;
+    
+    AVCaptureDeviceDiscoverySession* deviceDiscoverySession = [AVCaptureDeviceDiscoverySession discoverySessionWithDeviceTypes:@[AVCaptureDeviceTypeBuiltInWideAngleCamera] mediaType:AVMediaTypeVideo position:position];
+    
+    NSArray *devicesIOS  = deviceDiscoverySession.devices;
+    for (AVCaptureDevice *device in devicesIOS) {
+        if ([device position] == position) {
+            newDevice = device;
+        }
+    }
+    
+    NSError *error = nil;
+    [self.captureSession stopRunning];
+    [self.captureSession removeInput:self.captureDeviceInput];
+    self.captureDeviceInput = [[AVCaptureDeviceInput alloc] initWithDevice:newDevice error:&error];
+    
+    if([self.captureSession canAddInput:self.captureDeviceInput]){
+        [self.captureSession addInput:self.captureDeviceInput];
+        [self.captureSession startRunning];
+    }
+   
+
+}
+
 //- (AVCaptureDevice *)cameraWithPosition:(AVCaptureDevicePosition)position{
 //    NSArray *devices = [AVCaptureDevice devicesWithMediaType:AVMediaTypeVideo];
 //    for ( AVCaptureDevice *device in devices )
@@ -57,32 +97,33 @@ using namespace std;
 {
     self = [super init];
     if (self) {
+        self.choseCamera = AVCaptureDevicePositionFront;
         self.captureSession = [[AVCaptureSession alloc] init];
         
         //这里就是为什么Mat的规格为640*480
         _captureSession.sessionPreset = AVCaptureSessionPreset640x480;
         
         AVCaptureDevice *device = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
-        device = [self cameraWithPostion:AVCaptureDevicePositionFront];
+        device = [self cameraWithPostion:self.choseCamera];
        
         
         NSError *error = nil;
-        AVCaptureDeviceInput *input = [[AVCaptureDeviceInput alloc] initWithDevice:device error:&error];
-        if([self.captureSession canAddInput:input]){
-             [self.captureSession addInput:input];
+        self.captureDeviceInput = [[AVCaptureDeviceInput alloc] initWithDevice:device error:&error];
+        if([self.captureSession canAddInput:self.captureDeviceInput]){
+             [self.captureSession addInput:self.captureDeviceInput];
         }
        
         
-        AVCaptureVideoDataOutput *output = [[AVCaptureVideoDataOutput alloc] init];
-        output.videoSettings = @{(NSString *)kCVPixelBufferPixelFormatTypeKey : @(kCVPixelFormatType_32BGRA)};
-        output.alwaysDiscardsLateVideoFrames = YES;//here default is YES
-        if([self.captureSession canAddOutput:output]){
-            [self.captureSession addOutput:output];
+        self.captureDeviceOutput = [[AVCaptureVideoDataOutput alloc] init];
+        self.captureDeviceOutput.videoSettings = @{(NSString *)kCVPixelBufferPixelFormatTypeKey : @(kCVPixelFormatType_32BGRA)};
+        self.captureDeviceOutput.alwaysDiscardsLateVideoFrames = YES;//here default is YES
+        if([self.captureSession canAddOutput:self.captureDeviceOutput]){
+            [self.captureSession addOutput:self.captureDeviceOutput];
         }
         
         
         dispatch_queue_t queue = dispatch_queue_create("VideoQueue", DISPATCH_QUEUE_SERIAL);
-        [output setSampleBufferDelegate:self queue:queue];
+        [self.captureDeviceOutput setSampleBufferDelegate:self queue:queue];
         
         self.previewLayer = [CALayer layer];
         
@@ -105,6 +146,7 @@ using namespace std;
     bytesPerRow = (int)CVPixelBufferGetBytesPerRow(imageBuffer);
     
     Mat mat = Mat(height, width, CV_8UC4, base);
+    Mat mat2 = Mat(height, width, CV_8UC4, base);
     
     //Processing here
     switch(tmode)
@@ -126,8 +168,16 @@ using namespace std;
             break;
     }
     
-    
-    CGImageRef imageRef = [self CGImageFromCVMat:mat];
+    CGImageRef imageRef;
+    //前置摄像头的时候需要这样需改，不然视图会奇怪
+    if(self.choseCamera == AVCaptureDevicePositionFront){
+        cv::flip(mat, mat2, 0);
+        imageRef = [self CGImageFromCVMat:mat2];
+    }else{
+        imageRef = [self CGImageFromCVMat:mat];
+    }
+   
+   
     dispatch_sync(dispatch_get_main_queue(), ^{
        self.previewLayer.contents = (__bridge id)imageRef;
     });
@@ -142,8 +192,14 @@ using namespace std;
 }
 
 - (void)update:(CGPoint)coords {
-    if(tmode == 1)
-       [self.delegate update:coords];
+    if(tmode == 1){
+        //we should adjust the position of the touch point when use the Front Camera
+        if(self.choseCamera == AVCaptureDevicePositionFront){
+            coords = CGPointMake( CGRectGetWidth([[UIScreen mainScreen] bounds]) - coords.x, coords.y);
+        }
+        [self.delegate update:coords];
+    }
+    
 }
 
 - (void)start {
