@@ -118,6 +118,7 @@ static OSStatus	performRender (void                         *inRefCon,
     if(self)
     {   _myRangeFinder = NULL;
         [self setupAudioChain];
+        [AudioController switchRecordingMicPhone];
     }
     
     return self;
