@@ -18,8 +18,9 @@ typedef NS_ENUM(NSInteger, mAVCaptureDevicePosition) {
     Here Thr_X is the threshold value for positionX,if the change of the positionX > Thr_X,
     mean the object move obviously in X axis,in which situation we can not use the LLAP.
  */
-static float Thr_X = 35;
-static float Thr_Y = 35;
+static float Thr_X = 15;
+static float Thr_Y = 15;
+
 
 @interface FrameProcessor ()
 @property CGPoint openCVCurrentPosition;
@@ -29,6 +30,12 @@ static float Thr_Y = 35;
 @property float constY;
 @property float deltaX;
 @property float deltaY;
+
+@property bool moveLeft;
+@property bool moveRight;
+@property bool moveFront;
+@property bool moveBack;
+
 @property bool notFirstFrame;
 @end
 
@@ -40,6 +47,7 @@ static float Thr_Y = 35;
     self.boxWidth = [self calculateBoxWidth];
     self.constX = SCREEN_WIDTH/(355.0-125.0);
     self.constY = SCREEN_HEIGHT/(580.0-80.0);
+    self.frame2DAction = F2DStill;
     
     // CT initialization
     box = cv::Rect(100,100,self.boxWidth,self.boxWidth);
@@ -76,7 +84,7 @@ static float Thr_Y = 35;
     ct.processFrame(current_gray, box);
     // Draw bounding box
     rectangle(frame, box, Scalar(0,0,255));
-    NSLog(@"position is (%d,%d)\n",box.y,box.x);
+    //NSLog(@"position is (%d,%d)\n",box.y,box.x);
     // Draw small circle at the last point touched
     circle(frame, touch, 5, Scalar(0,255,0));
     
@@ -144,16 +152,39 @@ static float Thr_Y = 35;
         self.deltaX = self.deltaX + changeX;
         self.deltaY = self.deltaY + changeY;
         
-        if(fabsf(self.deltaX) > Thr_X || fabsf(self.deltaY) > Thr_Y){//
-            [[NSNotificationCenter defaultCenter] postNotificationName:@"canUseLLAPUpdate" object:nil];
+        if(fabsf(self.deltaX) > Thr_X || fabsf(self.deltaY) > Thr_Y){//这个是所有动作检测的基础，如果在二维上移动的幅度太小了，就认为没有运动
+            self.frame2DAction = F2DStill;
+            
+            if(fabsf(self.deltaX) > Thr_X)
+            {
+                if(self.deltaX > 0)
+                {
+                    self.frame2DAction = self.frame2DAction | F2DRight;
+                }
+                else
+                {
+                    self.frame2DAction = self.frame2DAction | F2DLeft;
+                }
+            }
+            if(fabsf(self.deltaY) > Thr_Y)
+            {
+                if(self.deltaY > 0)
+                {
+                    self.frame2DAction = self.frame2DAction | F2DBack;
+                }
+                else
+                {
+                    self.frame2DAction = self.frame2DAction | F2DFront;
+                }
+            }
+
+            [[NSNotificationCenter defaultCenter] postNotificationName:@"FrameProcessor_UseOpenCVDetection" object:nil];
             self.deltaX = 0;
             self.deltaY = 0;
         }
         
     }
-    
-    //这里到时要加判断，如果变化比较大的话那么才进行变更
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"OpenCVPositionUpdate" object:nil];
+
     self.notFirstFrame = YES;
 }
 
@@ -358,6 +389,7 @@ static float Thr_Y = 35;
 -(NSInteger)calculateBoxWidth{
     return SCREEN_WIDTH/10.0;
 }
+
 @end
 
 

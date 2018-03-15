@@ -9,5 +9,6 @@
 #import "BaseViewController.h"
 
 @interface Tracking3DViewController : BaseViewController
+-(void)performMouseUpdate;
 
 @end

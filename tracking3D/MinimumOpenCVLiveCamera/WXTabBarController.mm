@@ -55,6 +55,37 @@
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     [self.navigationController setNavigationBarHidden:YES animated:YES];
+    
+    
+//    for (UIView  * v in self.navigationController.navigationBar.subviews)
+//    {
+//        
+//        NSString * classname = NSStringFromClass([v class]);
+//        if ([classname isEqualToString:@"_UIBarBackground"]) {
+//            
+//            //bgview = v;
+//            
+//            for (UIView *vi in v.subviews) {
+//                // 适配iOS10
+//                NSString *viName = NSStringFromClass([vi class]);
+//                if ([viName isEqualToString:@"UIVisualEffectView"]) {
+//                    
+//                    vi.hidden = YES;
+//                    for(UIView* vii in vi.subviews){
+//                        //                        NSString* viiName = NSStringFromClass([vii class]);
+//                        //                        NSLog(@"viiName %@",viiName);
+//                        //                        NSLog(@"[vii class]%@",[vii class]);
+//                        if([NSStringFromClass([vii class]) isEqualToString:@"_UIVisualEffectSubview"]){
+//                            vii.backgroundColor = [UIColor redColor];
+//                            //vii.hidden = YES;
+//                        }
+//                    }
+//                    break;
+//                }
+//            }
+//        }
+//        
+//    }
 }
 
 - (void)viewDidAppear:(BOOL)animated {

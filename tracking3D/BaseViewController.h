@@ -11,7 +11,10 @@
 #import "AudioController.h"
 #import "CommonMacros.h"
 #import "UIView+Extension.h"
+#import "CommonMethod.h"
 
 @interface BaseViewController : UIViewController
 -(id) getVCFromTabBarControllerByIndex:(NSInteger)index;
+-(void)setMyBackgroundViewImage:(NSString *)myBackgroundViewImageName;
+-(void)setMyBackgroundViewBGColor:(UIColor *)myBackgroundBGColor;
 @end

@@ -14,9 +14,16 @@
 #import "CAStreamBasicDescription.h"
 
 #include "RangeFinder.h"
-
-
-
+/*
+    define the threshold value for the action for move up and down,
+    if the distance change is bigger than 5mm，then the object had moved
+ */
+#define Thr_Up_Down 6
+#define Thr_Sample 16
+//the threshold value for sample num，
+//这里如果静止不动的话LLAP的距离变化也会一直增加，观察到如果手运动的话，那么20个数据以上的变化是同向的，静止则没有连续那么多
+static NSInteger llap1DAction;//using the LLAP method to detect the action of the moving object
+static Float32   llap1DActionDistanceChange;
 struct CallbackData {
     AudioUnit               rioUnit;
     RangeFinder*            rangeFinder;
@@ -25,8 +32,14 @@ struct CallbackData {
     NSOutputStream*         dataOutStream;
     UInt64                  mtime;
     UInt64                  mUIUpdateTime;
-    AVAudioPlayer*          audioPlayer;  //for soundplay remove clicks
+    AVAudioPlayer*          audioPlayer;  //for soundplay remove clickss
     Float32                 distance;
+    Float32                 distanceChange;//实时距离变化
+    Float32                 distanceChangeSum;//实时距离变化的和的累计
+    Float32                 delta;//distance change sum
+    NSInteger               sampleNumForThr_Sample;
+    bool                    positiveSample;
+    
     CallbackData(): rioUnit(NULL), rangeFinder(NULL) , audioChainIsBeingReconstructed(NULL), canSendData(false), dataOutStream(NULL), mtime(0),mUIUpdateTime(0),audioPlayer(NULL),distance(0) {}
 } cd;
 
@@ -43,6 +56,7 @@ static OSStatus	performRender (void                         *inRefCon,
     OSStatus err = noErr;
     if (*cd.audioChainIsBeingReconstructed == NO)
     {
+        cd.sampleNumForThr_Sample++;
         mach_timebase_info_data_t info;
         if (mach_timebase_info(&info) != KERN_SUCCESS) return -1.0;
         UInt64 startTime = mach_absolute_time();
@@ -60,9 +74,48 @@ static OSStatus	performRender (void                         *inRefCon,
         memcpy((void*) cd.rangeFinder->GetRecDataBuffer(inNumberFrames), (void*) ioData->mBuffers[0].mData, sizeof(int16_t)*inNumberFrames);
         
         // Get the distance back
-        distancechange= cd.rangeFinder->GetDistanceChange();
-        
+        distancechange = cd.rangeFinder->GetDistanceChange();
+        cd.distanceChange = distancechange;
+        cd.distanceChangeSum += distancechange;
         cd.distance=cd.distance+distancechange*SPEED_ADJ;
+        
+        //printf("cd.distance change %f\n",distancechange);
+        //printf("cd.distance %f\n",cd.distance);
+
+        cd.delta = cd.delta + distancechange;
+        
+        
+        /*这里需要16个连续数据的符号相同才可以采用，如果不这样的话会出现这样的情况，
+         当没有物体在手机前面的时候动作探测一直是上，或者手放在手机上方不动，这个时候也是，
+         根本原因是上方没有物体或者物体静止的时候距离变化还是会不断增加。但是这两种情况不能再16个连续数据下距离变化符号保持一致。*/
+        bool sampleSignalChange = cd.positiveSample;
+        if(distancechange > 0){
+            cd.positiveSample = YES;
+        }else{
+            cd.positiveSample = NO;
+        }
+        if(sampleSignalChange != cd.positiveSample){//说明符号改变了
+            if(cd.sampleNumForThr_Sample < Thr_Sample){//表明这段数据不能用于移动物体，而是静态造成的
+                cd.delta = 0;
+                cd.sampleNumForThr_Sample = 0;
+            }else
+            {
+                llap1DActionDistanceChange = fabsf(cd.delta);
+                //printf("cd.delta is %f\n",cd.delta);
+                llap1DAction = LLAP1DStill;
+                if(cd.delta > 0){
+                    llap1DAction = llap1DAction | LLAP1DUp;
+                    printf("UP\n");
+                }else{
+                    llap1DAction = llap1DAction | LLAP1DDown;
+                    printf("Down\n");
+                }
+                cd.delta = 0;
+                cd.sampleNumForThr_Sample = 0;
+                
+                [[NSNotificationCenter defaultCenter] postNotificationName:@"AudioController_UseLLAPDetection" object:nil];
+            }
+        }
         if(cd.distance<0)
         {cd.distance=0;
         }
@@ -72,6 +125,7 @@ static OSStatus	performRender (void                         *inRefCon,
         }
         
         memcpy((void*) ioData->mBuffers[0].mData, (void*) cd.rangeFinder->GetPlayBuffer(inNumberFrames), sizeof(int16_t)*inNumberFrames);
+        
         if(cd.canSendData&&SEND_SOCKET_DATA)
         {
             if(cd.rangeFinder->mSocBufPos>0)
@@ -88,7 +142,7 @@ static OSStatus	performRender (void                         *inRefCon,
         
         if(fabs(distancechange)>0.06&& (startTime-cd.mUIUpdateTime)/1.0e6*info.numer/info.denom>10)
         {
-            [[NSNotificationCenter defaultCenter] postNotificationName:@"AudioDisUpdate" object:nil];
+            [[NSNotificationCenter defaultCenter] postNotificationName:@"AudioController_AudioDisUpdate" object:nil];
             cd.mUIUpdateTime=startTime;
         }
         
@@ -107,7 +161,7 @@ static OSStatus	performRender (void                         *inRefCon,
 - (void)setupAudioSession;
 - (void)setupIOUnit;
 - (void)setupAudioChain;
-
+@property float moveDistanceChange;
 @end
 
 @implementation AudioController
@@ -158,7 +212,7 @@ static OSStatus	performRender (void                         *inRefCon,
             [[AVAudioSession sharedInstance] setActive:YES error:&error];
             if (nil != error) DebugLog(@"AVAudioSession set active failed with error: %@", error);
             
-            [self startIOUnit];
+            //[self startIOUnit];
             
         }
     } catch (CAXException e) {
@@ -212,7 +266,7 @@ static OSStatus	performRender (void                         *inRefCon,
     delete _myRangeFinder;      _myRangeFinder = NULL;
     
     [self setupAudioChain];
-    [self startIOUnit];
+    //[self startIOUnit];
     
     _audioChainIsBeingReconstructed = NO;
 }
@@ -544,6 +598,38 @@ static OSStatus	performRender (void                         *inRefCon,
     }
     
 }
++ (id)sharedInstance {
+    
+    static dispatch_once_t once;
+    
+    static id sharedInstance;
+    
+    dispatch_once(&once, ^{
+        
+        sharedInstance = [[self alloc] init];});
+    
+    return sharedInstance;
+}
 
+//这个返回的检测出上下运动的时候记录的距离变化
+-(float)getllap1DDetectionDistanceChange{
+    return cd.delta;
+}
 
+//这个返回的是实时的距离变化，频率很快
+-(float)getDistanceChange{
+    return cd.distanceChange;
+}
+
+-(float)getDistanceChangeSum{
+    return cd.distanceChangeSum;
+}
+
+-(NSInteger)getLLAP1DAction{
+    return llap1DAction;
+}
+
+-(float)getllap1DActionDistanceChange{
+    return llap1DActionDistanceChange;
+}
 @end

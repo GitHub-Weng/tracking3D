@@ -37,14 +37,23 @@
 
 #endif
 
+typedef NS_ENUM(NSInteger, LLAP1DAction) {//表示帧处理过程中的2D运动方向
+    LLAP1DStill    = 0,
+    LLAP1DUp       = 1<<5,
+    LLAP1DDown     = 1<<6,
+};
 @interface AudioController : NSObject <NSStreamDelegate>
 
 @property Float32 audiodistance;
-
 - (OSStatus) startIOUnit;
 - (OSStatus) stopIOUnit;
 - (void) playMySound;
 - (void) stopMySound;
 - (void)stream:(NSStream *)stream handleEvent:(NSStreamEvent)eventCode;
 + (void) switchRecordingMicPhone;
++ (id)sharedInstance;
+- (float)getDistanceChange;
+- (float)getDistanceChangeSum;
+-(NSInteger)getLLAP1DAction;//判断动作是向上还是向下
+-(float)getllap1DActionDistanceChange;//获取这个上下运动的距离变化
 @end

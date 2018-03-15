@@ -13,7 +13,13 @@
 
 using namespace cv;
 
-
+typedef NS_ENUM(NSInteger, Frame2DAction) {//表示帧处理过程中的2D运动方向
+    F2DStill    = 0,
+    F2DLeft     = 1<<1,
+    F2DRight    = 1<<2,
+    F2DFront    = 1<<3,
+    F2DBack     = 1<<4,
+};
 
 @interface FrameProcessor : NSObject<VideoSourceDelegate> {
     
@@ -42,7 +48,7 @@ using namespace cv;
 }
 
 -(CGPoint)getOpenCVCurrentPosition;
-
+@property NSInteger frame2DAction;
 @end
 
 

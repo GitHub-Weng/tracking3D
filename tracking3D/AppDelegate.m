@@ -10,6 +10,8 @@
 #import "OpenCVViewController.h"
 #import "WXTabBarController.h"
 #import "LLAPViewController.h"
+#import "Tracking3DViewController.h"
+#import "CommonMethod.h"
 @interface AppDelegate ()
 
 @property (nonatomic, strong) WXTabBarController *tabBarController;
@@ -58,9 +60,8 @@
 - (UINavigationController *)navigationController {
     if (_navigationController == nil) {
         UINavigationController *navigationController = [[UINavigationController alloc] initWithRootViewController:self.tabBarController];
-        
-        //navigationController.navigationBar.tintColor = [UIColor colorWithRed:26 / 255.0 green:178 / 255.0 blue:10 / 255.0 alpha:1];
-        navigationController.navigationBar.tintColor = [UIColor clearColor];
+
+
         _navigationController = navigationController;
     }
     return _navigationController;
@@ -70,80 +71,82 @@
     if (_tabBarController == nil) {
         WXTabBarController *tabBarController = [WXTabBarController sharedInstance];
         
-        UIViewController *mainframeViewController =
+        LLAPViewController *llapViewController =
         ({
-            UIViewController *mainframeViewController = [[LLAPViewController alloc] init];
+            LLAPViewController *llapViewController = [[LLAPViewController alloc] init];
             
-            UIImage *mainframeImage   = [UIImage imageNamed:@"tabbar_mainframe"];
-            UIImage *mainframeHLImage = [UIImage imageNamed:@"tabbar_mainframeHL"];
+            UIImage *mainframeImage   = [UIImage imageNamed:@"sound_icon"];
+            UIImage *mainframeHLImage = [UIImage imageNamed:@"sound_selected_icon"];
             
-            mainframeViewController.title = @"LLAP";//这里是视图的上部的头部条
-            mainframeViewController.tabBarItem = [[UITabBarItem alloc] initWithTitle:@"llap" image:mainframeImage selectedImage:mainframeHLImage];
-            //mainframeViewController.tabBarItem.badgeValue = @"9";
-            mainframeViewController.tabBarItem.tag = OneDimension;
-            mainframeViewController.view.backgroundColor = [UIColor colorWithRed:48 / 255.0 green:67 / 255.0 blue:78 / 255.0 alpha:1];
-//            mainframeViewController.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"barbuttonicon_add"]
+            llapViewController.title = @"LLAP";//这里是视图的上部的头部条
+            llapViewController.tabBarItem = [[UITabBarItem alloc] initWithTitle:@"llap" image:mainframeImage selectedImage:mainframeHLImage];
+            //llapViewController.tabBarItem.badgeValue = @"9";
+            llapViewController.tabBarItem.tag = OneDimension;
+            llapViewController.view.backgroundColor = [UIColor colorWithRed:247 / 255.0 green:247 / 255.0 blue:247 / 255.0 alpha:1];
+           
+//            llapViewController.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"barbuttonicon_add"]
 //                                                                                                         style:UIBarButtonItemStylePlain
 //                                                                                                        target:self
 //                                                                                                        action:@selector(didClickAddButton:)];
             
-            mainframeViewController;
+            llapViewController;
         });
         
-        OpenCVViewController *visualizedController =
+        OpenCVViewController *openCVViewController =
         ({
-            OpenCVViewController *visualizedController = [[OpenCVViewController alloc] init];
+            OpenCVViewController *openCVViewController = [[OpenCVViewController alloc] init];
         
-            UIImage *contactsImage   = [UIImage imageNamed:@"tabbar_contacts"];
-            UIImage *contactsHLImage = [UIImage imageNamed:@"tabbar_contactsHL"];
+            UIImage *contactsImage   = [UIImage imageNamed:@"video_icon"];
+            UIImage *contactsHLImage = [UIImage imageNamed:@"video_selected_icon"];
             
-            visualizedController.title = @"tracking";
-            visualizedController.tabBarItem = [[UITabBarItem alloc] initWithTitle:@"tracking" image:contactsImage selectedImage:contactsHLImage];
-            visualizedController.tabBarItem.tag = Visualized;
+            openCVViewController.title = @"openCV";
+            openCVViewController.tabBarItem = [[UITabBarItem alloc] initWithTitle:@"openCV" image:contactsImage selectedImage:contactsHLImage];
+            openCVViewController.tabBarItem.tag = Visualized;
             
-            visualizedController.view.backgroundColor = [UIColor colorWithRed:115 / 255.0 green:155 / 255.0 blue:6 / 255.0 alpha:1];
-            
-            visualizedController;
+            openCVViewController.view.backgroundColor = [UIColor colorWithRed:247 / 255.0 green:247 / 255.0 blue:247 / 255.0 alpha:1];
+            openCVViewController;
         });
         
-        UIViewController *discoverViewController = ({
-            UIViewController *discoverViewController = [[UIViewController alloc] init];
+        Tracking3DViewController *tracking3DViewController = ({
+            Tracking3DViewController *tracking3DViewController = [[Tracking3DViewController alloc] init];
             
-            UIImage *discoverImage   = [UIImage imageNamed:@"tabbar_discover"];
-            UIImage *discoverHLImage = [UIImage imageNamed:@"tabbar_discoverHL"];
+            UIImage *discoverImage   = [UIImage imageNamed:@"track_icon"];
+            UIImage *discoverHLImage = [UIImage imageNamed:@"track_selected_icon"];
             
-            discoverViewController.title = @"发现";
-            discoverViewController.tabBarItem = [[UITabBarItem alloc] initWithTitle:@"发现" image:discoverImage selectedImage:discoverHLImage];
-            discoverViewController.tabBarItem.tag = TwoDimension;
-            discoverViewController.view.backgroundColor = [UIColor colorWithRed:32 / 255.0 green:85 / 255.0 blue:128 / 255.0 alpha:1];
+            tracking3DViewController.title = @"tracking";
+            tracking3DViewController.tabBarItem = [[UITabBarItem alloc] initWithTitle:@"tracking" image:discoverImage selectedImage:discoverHLImage];
+            tracking3DViewController.tabBarItem.tag = TwoDimension;
+            tracking3DViewController.view.backgroundColor = [UIColor colorWithRed:247 / 255.0 green:247 / 255.0 blue:247 / 255.0 alpha:1];
             
-            discoverViewController;
+            tracking3DViewController;
         });
         
-        UIViewController *meViewController = ({
-            UIViewController *meViewController = [[UIViewController alloc] init];
+        UIViewController *tracking3DGameViewController = ({
+            UIViewController *tracking3DGameViewController = [[UIViewController alloc] init];
             
-            UIImage *meImage   = [UIImage imageNamed:@"tabbar_me"];
-            UIImage *meHLImage = [UIImage imageNamed:@"tabbar_meHL"];
+            UIImage *meImage   = [UIImage imageNamed:@"game_icon"];
+            UIImage *meHLImage = [UIImage imageNamed:@"game_selected_icon"];
             
-            meViewController.title = @"我";
-            meViewController.tabBarItem = [[UITabBarItem alloc] initWithTitle:@"我" image:meImage selectedImage:meHLImage];
-            meViewController.view.backgroundColor = [UIColor colorWithRed:199 / 255.0 green:135 / 255.0 blue:56 / 255.0 alpha:1];
+            tracking3DGameViewController.title = @"game";
+            tracking3DGameViewController.tabBarItem = [[UITabBarItem alloc] initWithTitle:@"game" image:meImage selectedImage:meHLImage];
+            tracking3DGameViewController.view.backgroundColor = [UIColor colorWithRed:247 / 255.0 green:247 / 255.0 blue:247 / 255.0 alpha:1];
             
-            meViewController;
+            tracking3DGameViewController;
         });
         
-        tabBarController.title = @"微信";
-        tabBarController.tabBar.tintColor = [UIColor colorWithRed:26 / 255.0 green:178 / 255.0 blue:10 / 255.0 alpha:1];
+        tabBarController.title = @"3DTracking";
         
+        tabBarController.tabBar.tintColor = [CommonMethod colorWithHexString:@"#0094DF"];
+
         tabBarController.viewControllers = @[
-                                             [[UINavigationController alloc] initWithRootViewController:mainframeViewController],
-                                             [[UINavigationController alloc] initWithRootViewController:visualizedController],
-                                             [[UINavigationController alloc] initWithRootViewController:discoverViewController],
-                                             [[UINavigationController alloc] initWithRootViewController:meViewController],
+                                             [[UINavigationController alloc] initWithRootViewController:llapViewController],
+                                             [[UINavigationController alloc] initWithRootViewController:openCVViewController],
+                                             [[UINavigationController alloc] initWithRootViewController:tracking3DViewController],
+                                             [[UINavigationController alloc] initWithRootViewController:tracking3DGameViewController],
                                              ];
         
         _tabBarController = tabBarController;
+    
     }
     return _tabBarController;
 }

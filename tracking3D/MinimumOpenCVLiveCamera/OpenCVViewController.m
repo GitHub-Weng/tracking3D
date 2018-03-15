@@ -16,7 +16,7 @@
 
 @property (strong,nonatomic) UIButton* start;
 @property (strong,nonatomic) UIButton* stop;
-@property (strong,nonatomic) UIButton* mode;
+//@property (strong,nonatomic) UIButton* mode;
 @property (strong,nonatomic) UIButton* mouse;
 @property (strong,nonatomic) UIButton* testOpenCVTrackResultBtn;
 @property (strong,nonatomic) UIButton* switchCameraBtn;
@@ -29,6 +29,7 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    
     // Do any additional setup after loading the view, typically from a nib.
     //audioController = [[AudioController alloc] init];
 
@@ -37,66 +38,66 @@
      float btnMargin = btnHeight;
     
     self.previewView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, SCREEN_WIDTH ,SCREEN_HEIGHT)];
-    self.wrapper = [[Wrapper alloc]init];
+    self.wrapper = [Wrapper sharedInstance];
     
-    self.start = [[UIButton alloc]initWithFrame:CGRectMake(btnMargin, SCREEN_HEIGHT/2+100, btnWidth, btnHeight)];
+    self.start = [[UIButton alloc]initWithFrame:CGRectMake(btnMargin, SCREEN_HEIGHT*0.72, btnWidth, btnWidth)];
     [self.start addTarget:self action:@selector(startTracking) forControlEvents:UIControlEventTouchDown];
     
-    self.stop = [[UIButton alloc]initWithFrame:CGRectMake(self.start.right + btnMargin, SCREEN_HEIGHT/2+100, btnWidth,btnHeight)];
-    [self.stop addTarget:self action:@selector(stopTracking) forControlEvents:UIControlEventTouchDown];
-    
-    self.mode = [[UIButton alloc]initWithFrame:CGRectMake(self.stop.right+btnMargin, SCREEN_HEIGHT/2+100, btnWidth,btnHeight)];
-    [self.mode addTarget:self action:@selector(showAlertMenu) forControlEvents:UIControlEventTouchDown];
-    
-    self.mouse = [[UIButton alloc]initWithFrame:CGRectMake(0, 0, 55,55)];
-    [self.mouse addTarget:self action:@selector(showAlertMenu) forControlEvents:UIControlEventTouchDown];
-    
-    self.testOpenCVTrackResultBtn = [[UIButton alloc]initWithFrame:CGRectMake((SCREEN_WIDTH - btnWidth)/2, SCREEN_HEIGHT/2+200, btnWidth,btnWidth)];
-    [self.testOpenCVTrackResultBtn addTarget:self action:@selector(showTestOpenCVResult) forControlEvents:UIControlEventTouchDown];
-    
-    self.switchCameraBtn = [[UIButton alloc]initWithFrame:CGRectMake(SCREEN_WIDTH - 80, 80, 40,40)];
-    [self.switchCameraBtn setImage:[UIImage imageNamed:@"switch_camera.png"] forState:UIControlStateNormal];
+    self.switchCameraBtn = [[UIButton alloc]initWithFrame:CGRectMake(self.start.right+btnMargin, SCREEN_HEIGHT*0.72, btnWidth,btnWidth)];
+    [self.switchCameraBtn setImage:[UIImage imageNamed:@"camera_icon_gray"] forState:UIControlStateNormal];
+    [self.switchCameraBtn setImage:[UIImage imageNamed:@"camera_icon_blue"] forState:UIControlEventTouchDown];
     [self.switchCameraBtn addTarget:self action:@selector(switchCamera) forControlEvents:UIControlEventTouchDown];
     
+    self.stop = [[UIButton alloc]initWithFrame:CGRectMake(self.switchCameraBtn.right + btnMargin, SCREEN_HEIGHT*0.72, btnWidth,btnWidth)];
+    [self.stop addTarget:self action:@selector(stopTracking) forControlEvents:UIControlEventTouchDown];
     
-    self.start.layer.cornerRadius = 4;
-    self.stop.layer.cornerRadius = 4;
-    self.mode.layer.cornerRadius = 4;
-    self.testOpenCVTrackResultBtn.layer.cornerRadius = btnWidth/2;
+//    self.mode = [[UIButton alloc]initWithFrame:CGRectMake(self.stop.right+btnMargin, SCREEN_HEIGHT/2+100, btnWidth,btnHeight)];
+//    [self.mode addTarget:self action:@selector(showAlertMenu) forControlEvents:UIControlEventTouchDown];
     
-    self.start.backgroundColor = [UIColor grayColor];
-    self.stop.backgroundColor = [UIColor grayColor];
-    self.mode.backgroundColor = [UIColor grayColor];
+
+    
+    self.mouse = [[UIButton alloc]initWithFrame:CGRectMake(-100, -100, 55,55)];
+    [self.mouse addTarget:self action:@selector(showAlertMenu) forControlEvents:UIControlEventTouchDown];
+    
+    self.testOpenCVTrackResultBtn = [[UIButton alloc]initWithFrame:CGRectMake((SCREEN_WIDTH - btnWidth)/2, self.start.bottom, btnWidth,btnWidth)];
+    [self.testOpenCVTrackResultBtn addTarget:self action:@selector(showTestOpenCVResult) forControlEvents:UIControlEventTouchDown];
+    
+
+    
+    self.start.backgroundColor = [UIColor clearColor];
+    self.stop.backgroundColor = [UIColor clearColor];
     self.mouse.backgroundColor = [UIColor grayColor];
-    self.testOpenCVTrackResultBtn.backgroundColor = [UIColor grayColor];
+    self.switchCameraBtn.backgroundColor = [UIColor clearColor];
+    self.testOpenCVTrackResultBtn.backgroundColor = [UIColor clearColor];
+    //self.mode.backgroundColor = [UIColor grayColor];
     
-    [self.start setTitle:@"start" forState:UIControlStateNormal];
-    [self.start setTintColor:[UIColor whiteColor]];
+    [self.start setImage:[UIImage imageNamed:@"startbtn_icon_gray"] forState:UIControlStateNormal];
+    [self.start setImage:[UIImage imageNamed:@"startbtn_icon_blue"] forState:UIControlEventTouchDown];
+    [self.stop setImage:[UIImage imageNamed:@"stopbtn_icon_gray"] forState:UIControlStateNormal];
+    [self.stop setImage:[UIImage imageNamed:@"stopbtn_icon_blue"] forState:UIControlEventTouchDown];
     
-    [self.stop setTitle:@"stop" forState:UIControlStateNormal];
-    [self.stop setTintColor:[UIColor whiteColor]];
     
-    [self.mode setTitle:@"mode" forState:UIControlStateNormal];
-    [self.mode setTintColor:[UIColor whiteColor]];
+//    [self.mode setTitle:@"mode" forState:UIControlStateNormal];
+//    [self.mode setTintColor:[UIColor whiteColor]];
     
     [self.mouse setTitle:@"mouse" forState:UIControlStateNormal];
     [self.mouse setTintColor:[UIColor whiteColor]];
     
-    [self.testOpenCVTrackResultBtn setTitle:@"test" forState:UIControlStateNormal];
-    [self.testOpenCVTrackResultBtn setTintColor:[UIColor whiteColor]];
-
+    [self.testOpenCVTrackResultBtn setImage:[UIImage imageNamed:@"testbtn_icon_gray"] forState:UIControlStateNormal];
+    [self.testOpenCVTrackResultBtn setImage:[UIImage imageNamed:@"testbtn_icon_blue"] forState:UIControlEventTouchDown];
     
     [self.wrapper setTargetView:self.previewView];
     [self.view addSubview:self.previewView];
     [self.view addSubview:self.start];
     [self.view addSubview: self.stop];
-    [self.view addSubview:self.mode];
+    //[self.view addSubview:self.mode];
     [self.view addSubview:self.switchCameraBtn];
     [self.view addSubview:self.mouse];
     [self.view addSubview:self.testOpenCVTrackResultBtn];
+    [self setMyBackgroundViewImage:@"mybackground2.jpg"];
+
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(performOpenCVPositionUpdate:) name:Wrapper_UseOpenCVDetection object:nil];
     
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(performOpenCVPositionUpdate:) name:@"OpenCVPositionUpdate" object:nil];
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(performCanUseLLAPUpdate:) name:@"canUseLLAPUpdate" object:nil];
 }
 
 //这里加了TabBarController的功能之后切换tabBar并不会调用这个方法
@@ -110,7 +111,7 @@
     if(touch){
         CGPoint position = [touch locationInView:self.view];
         [self.wrapper updateBox:position];
-        NSLog(@"touch position is (%f,%f)",position.x,position.y);
+        //NSLog(@"touch position is (%f,%f)",position.x,position.y);
     }
 }
 
@@ -119,7 +120,7 @@
     if(touch){
         CGPoint position = [touch locationInView:self.view];
         [self.wrapper updateBox:position];
-        NSLog(@"touch position is (%f,%f)",position.x,position.y);
+        //NSLog(@"touch position is (%f,%f)",position.x,position.y);
     }
 }
 -(void)startTracking{
@@ -267,16 +268,9 @@
 {
     dispatch_async(dispatch_get_main_queue(), ^{
         
-        CGPoint openCVCurrentPosition = [self.wrapper getOpenCVCurrentPosition];
+        CGPoint openCVCurrentPosition = self.wrapper.frame2DPosition;
         self.mouse.frame = CGRectMake(openCVCurrentPosition.x, openCVCurrentPosition.y, SCREEN_WIDTH/8, SCREEN_WIDTH/8);
         
-    }
-                   );
-    
-}
-- (void)performCanUseLLAPUpdate:(NSNotification *)notification
-{
-    dispatch_async(dispatch_get_main_queue(), ^{
         
         if(self.mouse.backgroundColor == [UIColor grayColor]){
             self.mouse.backgroundColor = [UIColor redColor];
@@ -284,10 +278,13 @@
             self.mouse.backgroundColor = [UIColor grayColor];
         }
         
+        
     }
                    );
     
 }
+
+
 
 
 @end
