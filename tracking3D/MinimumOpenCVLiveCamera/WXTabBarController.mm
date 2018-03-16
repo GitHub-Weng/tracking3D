@@ -173,6 +173,7 @@
 
 - (void)setSelectedViewController:(UIViewController *)selectedViewController {
     self.selectedIndex = [self.backingViewControllers indexOfObject:selectedViewController];
+    [[NSNotificationCenter defaultCenter] postNotificationName:WXTabBarControllerIndexChange object:nil];
 }
 
 - (NSUInteger)selectedIndex {
@@ -301,5 +302,9 @@
     NSArray<__kindof UIViewController *> *viewControllers = [super viewControllers];
     id tempVC = viewControllers[VCIndex].childViewControllers.lastObject;
     return tempVC;
+}
+
+-(NSUInteger)getCurIndex{
+    return  self.selectedIndex;
 }
 @end

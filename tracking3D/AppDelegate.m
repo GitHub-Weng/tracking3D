@@ -12,20 +12,27 @@
 #import "LLAPViewController.h"
 #import "Tracking3DViewController.h"
 #import "CommonMethod.h"
+#import "AAPLGameViewController.h"
 @interface AppDelegate ()
 
 @property (nonatomic, strong) WXTabBarController *tabBarController;
+@property (nonatomic,strong)AAPLGameViewController* gameViewController;
 @end
 
 @implementation AppDelegate
 
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+    UIStoryboard *story = [UIStoryboard storyboardWithName:@"gameStoryBoard" bundle:nil];
+    
+    self.gameViewController = [story instantiateViewControllerWithIdentifier:@"myView"];
+    
     
     self.window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
     
-    self.window.rootViewController = self.navigationController;
+    self.window.rootViewController = [self getMyNavigationController];
     [self.window makeKeyAndVisible];
+    
     
     // Override point for customization after application launch.
     return YES;
@@ -57,9 +64,9 @@
 
 
 
-- (UINavigationController *)navigationController {
+- (UINavigationController *)getMyNavigationController {
     if (_navigationController == nil) {
-        UINavigationController *navigationController = [[UINavigationController alloc] initWithRootViewController:self.tabBarController];
+        UINavigationController *navigationController = [[UINavigationController alloc] initWithRootViewController:[self getMyTabBarController]];
 
 
         _navigationController = navigationController;
@@ -67,7 +74,7 @@
     return _navigationController;
 }
 
-- (WXTabBarController *)tabBarController {
+- (WXTabBarController *)getMyTabBarController {
     if (_tabBarController == nil) {
         WXTabBarController *tabBarController = [WXTabBarController sharedInstance];
         
@@ -121,18 +128,13 @@
             tracking3DViewController;
         });
         
-        UIViewController *tracking3DGameViewController = ({
-            UIViewController *tracking3DGameViewController = [[UIViewController alloc] init];
-            
-            UIImage *meImage   = [UIImage imageNamed:@"game_icon"];
-            UIImage *meHLImage = [UIImage imageNamed:@"game_selected_icon"];
-            
-            tracking3DGameViewController.title = @"game";
-            tracking3DGameViewController.tabBarItem = [[UITabBarItem alloc] initWithTitle:@"game" image:meImage selectedImage:meHLImage];
-            tracking3DGameViewController.view.backgroundColor = [UIColor colorWithRed:247 / 255.0 green:247 / 255.0 blue:247 / 255.0 alpha:1];
-            
-            tracking3DGameViewController;
-        });
+        //AAPLGameViewController *gameViewController = self.gameViewController;
+        UIImage *meImage   = [UIImage imageNamed:@"game_icon"];
+        UIImage *meHLImage = [UIImage imageNamed:@"game_selected_icon"];
+        
+        self.gameViewController.title = @"game";
+        self.gameViewController.tabBarItem = [[UITabBarItem alloc] initWithTitle:@"game" image:meImage selectedImage:meHLImage];
+        self.gameViewController.view.backgroundColor = [UIColor colorWithRed:247 / 255.0 green:247 / 255.0 blue:247 / 255.0 alpha:1];
         
         tabBarController.title = @"3DTracking";
         
@@ -142,7 +144,7 @@
                                              [[UINavigationController alloc] initWithRootViewController:llapViewController],
                                              [[UINavigationController alloc] initWithRootViewController:openCVViewController],
                                              [[UINavigationController alloc] initWithRootViewController:tracking3DViewController],
-                                             [[UINavigationController alloc] initWithRootViewController:tracking3DGameViewController],
+                                             [[UINavigationController alloc] initWithRootViewController:self.gameViewController],
                                              ];
         
         _tabBarController = tabBarController;

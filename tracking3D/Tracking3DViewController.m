@@ -114,12 +114,8 @@
     
     [self.view addSubview:self.mouse];
     
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(performMouseUpdate) name:Wrapper_UseOpenCVDetection object:nil];
-    
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(performWrapper_UseLLAPDetection) name:Wrapper_UseLLAPDetection object:nil];
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(performWrapper_UseLLAPDetection_Up_Down) name:Wrapper_UseLLAPDetection_Up_Down object:nil];
-    
-    
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(performWXTabBarControllerIndexChange) name:WXTabBarControllerIndexChange object:nil];
+
     [self setMyBackgroundViewBGColor:[UIColor colorWithRed:0 green:0 blue:0 alpha:1]];
 
 
@@ -382,6 +378,23 @@
     }else{
         self.waveMaskView.alpha = 1;
     }
+}
+
+
+-(void)performWXTabBarControllerIndexChange{
+    if([[WXTabBarController sharedInstance] getCurIndex] == 2){
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(performMouseUpdate) name:Wrapper_UseOpenCVDetection object:nil];
+        
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(performWrapper_UseLLAPDetection) name:Wrapper_UseLLAPDetection object:nil];
+        
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(performWrapper_UseLLAPDetection_Up_Down) name:Wrapper_UseLLAPDetection_Up_Down object:nil];
+        
+    }else{
+        [[NSNotificationCenter defaultCenter]removeObserver:self name:Wrapper_UseOpenCVDetection object:nil];
+        [[NSNotificationCenter defaultCenter]removeObserver:self name:Wrapper_UseLLAPDetection object:nil];
+        [[NSNotificationCenter defaultCenter]removeObserver:self name:Wrapper_UseLLAPDetection_Up_Down object:nil];
+    }
+    
 }
 
 @end

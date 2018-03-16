@@ -36,11 +36,11 @@
         
         self.startBtn.frame = CGRectMake(80, SCREEN_HEIGHT/4, 90, 90);
         [self.startBtn setImage:[UIImage imageNamed:@"startbtn_icon_white"] forState:UIControlStateNormal];
-        [self.startBtn setImage:[UIImage imageNamed:@"startbtn_icon_blue"] forState:UIControlEventTouchDown];
+        [self.startBtn setImage:[UIImage imageNamed:@"startbtn_icon_yellow"] forState:UIControlEventTouchDown];
         
         self.stopBtn.frame = CGRectMake(SCREEN_WIDTH-160, SCREEN_HEIGHT/4, 90, 90);
         [self.stopBtn setImage:[UIImage imageNamed:@"stopbtn_icon_white"] forState:UIControlStateNormal];
-        [self.stopBtn setImage:[UIImage imageNamed:@"stopbtn_icon_blue"] forState:UIControlEventTouchDown];
+        [self.stopBtn setImage:[UIImage imageNamed:@"stopbtn_icon_yellow"] forState:UIControlEventTouchDown];
 
         [self.startBtn addTarget:self action:@selector(startBtnClicked:) forControlEvents:UIControlEventTouchDown];
         [self.stopBtn addTarget:self action:@selector(stopBtnClicked:) forControlEvents:UIControlEventTouchDown];\

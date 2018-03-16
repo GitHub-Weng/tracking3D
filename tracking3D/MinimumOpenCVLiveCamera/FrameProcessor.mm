@@ -18,9 +18,10 @@ typedef NS_ENUM(NSInteger, mAVCaptureDevicePosition) {
     Here Thr_X is the threshold value for positionX,if the change of the positionX > Thr_X,
     mean the object move obviously in X axis,in which situation we can not use the LLAP.
  */
-static float Thr_X = 15;
-static float Thr_Y = 15;
-
+static float Thr_X = SCREEN_WIDTH/10;
+static float Thr_Y = SCREEN_WIDTH/10;
+static float Thr_XT3D = 30;//这是用于动作的
+static float Thr_YT3D = 30;
 
 @interface FrameProcessor ()
 @property CGPoint openCVCurrentPosition;
@@ -155,29 +156,33 @@ static float Thr_Y = 15;
         if(fabsf(self.deltaX) > Thr_X || fabsf(self.deltaY) > Thr_Y){//这个是所有动作检测的基础，如果在二维上移动的幅度太小了，就认为没有运动
             self.frame2DAction = F2DStill;
             
-            if(fabsf(self.deltaX) > Thr_X)
+            if(fabsf(self.deltaX) > fabsf(self.deltaY))
             {
-                if(self.deltaX > 0)
+                if(fabsf(self.deltaX) > Thr_X)
                 {
-                    self.frame2DAction = self.frame2DAction | F2DRight;
-                }
-                else
-                {
-                    self.frame2DAction = self.frame2DAction | F2DLeft;
+                    if(self.deltaX > 0)
+                    {
+                        self.frame2DAction = self.frame2DAction | F2DRight;
+                    }
+                    else
+                    {
+                        self.frame2DAction = self.frame2DAction | F2DLeft;
+                    }
                 }
             }
-            if(fabsf(self.deltaY) > Thr_Y)
-            {
-                if(self.deltaY > 0)
+            else{
+                if(fabsf(self.deltaY) > Thr_Y)
                 {
-                    self.frame2DAction = self.frame2DAction | F2DBack;
-                }
-                else
-                {
-                    self.frame2DAction = self.frame2DAction | F2DFront;
+                    if(self.deltaY > 0)
+                    {
+                        self.frame2DAction = self.frame2DAction | F2DBack;
+                    }
+                    else
+                    {
+                        self.frame2DAction = self.frame2DAction | F2DFront;
+                    }
                 }
             }
-
             [[NSNotificationCenter defaultCenter] postNotificationName:@"FrameProcessor_UseOpenCVDetection" object:nil];
             self.deltaX = 0;
             self.deltaY = 0;

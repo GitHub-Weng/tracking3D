@@ -8,6 +8,7 @@
 
 #import <UIKit/UIKit.h>
 #import "AudioController.h"
+#define  WXTabBarControllerIndexChange @"WXTabBarControllerIndexChange"
 
 typedef enum tabBarTag {
     OneDimension,
@@ -18,4 +19,5 @@ typedef enum tabBarTag {
 @interface WXTabBarController : UITabBarController <UITabBarControllerDelegate>
 + (id)sharedInstance;
 -(id)getSuperVCByIndex:(NSInteger)VCIndex;
+-(NSUInteger)getCurIndex;//当前选择的是哪一个index
 @end
