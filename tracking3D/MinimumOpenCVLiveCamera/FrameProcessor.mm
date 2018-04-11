@@ -20,8 +20,6 @@ typedef NS_ENUM(NSInteger, mAVCaptureDevicePosition) {
  */
 static float Thr_X = SCREEN_WIDTH/10;
 static float Thr_Y = SCREEN_WIDTH/10;
-static float Thr_XT3D = 30;//这是用于动作的
-static float Thr_YT3D = 30;
 
 @interface FrameProcessor ()
 @property CGPoint openCVCurrentPosition;

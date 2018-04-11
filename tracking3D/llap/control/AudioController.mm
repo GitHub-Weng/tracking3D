@@ -312,7 +312,7 @@ static OSStatus	performRender (void                         *inRefCon,
                                                  selector:@selector(handleInterruption:)
                                                      name:AVAudioSessionInterruptionNotification
                                                    object:sessionInstance];
-        
+         
         // we don't do anything special in the route change notification
         [[NSNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(handleRouteChange:)
